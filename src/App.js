@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 import { BrowserRouter, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -39,62 +39,45 @@ function buildNewCartItem(cartItem) {
   };
 }
 
-class App extends Component {
-  constructor(props) {
-    super(props);
+export default function App() {
+  const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [status, setStatus] = useState({
+    isLoading: false,
+    hasError: false,
+    loadingError: null,
+  });
 
-    this.state = {
-      products: [],
-      cartItems: [],
-      isLoading: false,
-      hasError: false,
-      loadingError: null,
-    };
-
-    this.handleAddToCart = this.handleAddToCart.bind(this);
-    this.handleRemove = this.handleRemove.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleDownVote = this.handleDownVote.bind(this);
-    this.handleUpVote = this.handleUpVote.bind(this);
-    this.handleSetFavorite = this.handleSetFavorite.bind(this);
-    this.saveNewProduct = this.saveNewProduct.bind(this);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     const prevItems = loadLocalStorageData();
 
     if (!prevItems) {
-      this.setState({
+      setStatus((prevState) => ({
+        ...prevState,
         isLoading: true,
-      });
+      }));
 
       api.getProducts().then((data) => {
-        this.setState({
-          products: data,
+        setProducts(data);
+        setStatus((prevState) => ({
+          ...prevState,
           isLoading: false,
-        });
+        }));
       });
       return;
     }
+    setProducts(prevItems.products);
+    setCartItems(prevItems.cartItems);
+  }, []);
 
-    this.setState({
-      cartItems: prevItems.cartItems,
-      products: prevItems.products,
-    });
-  }
-
-  componentDidUpdate() {
-    const { cartItems, products } = this.state;
-
-    localStorage.setItem(
+  useEffect(()=>{
+  localStorage.setItem(
       LOCAL_STORAGE_KEY,
       JSON.stringify({ cartItems, products }),
     );
-  }
+  }, [products, cartItems]);
 
-  handleAddToCart(productId) {
-    const { cartItems, products } = this.state;
-
+function handleAddToCart(productId) {
     const prevCartItem = cartItems.find((item) => item.id === productId);
     const foundProduct = products.find((product) => product.id === productId);
 
@@ -114,15 +97,138 @@ class App extends Component {
         };
       });
 
-      this.setState({ cartItems: updatedCartItems });
+      setCartItems(updatedCartItems);
       return;
     }
 
     const updatedProduct = buildNewCartItem(foundProduct);
-    this.setState((prevState) => ({
-      cartItems: [...prevState.cartItems, updatedProduct],
-    }));
+    setCartItems((prevCartItems) => ([
+      ...prevCartItems, updatedProduct
+    ]));
   }
+
+
+  return (
+    <BrowserRouter>
+      <Route
+        path="/"
+        exact
+        render={(routeProps) => (
+          <Home
+            {...routeProps}
+            fullWidth
+            cartItems={cartItems}
+            products={products}
+            isLoading={isLoading}
+            hasError={hasError}
+            loadingError={loadingError}
+            handleDownVote={handleDownVote}
+            handleUpVote={handleUpVote}
+            handleSetFavorite={handleSetFavorite}
+            handleAddToCart={handleAddToCart}
+            handleChange={handleChange}
+            handleRemove={handleRemove}
+          />
+        )}
+      />
+      <Route
+        path="/new-product"
+        exact
+        render={(routeProps) => (
+          <NewProduct {...routeProps} saveNewProduct={saveNewProduct} />
+        )}
+      />
+    </BrowserRouter>
+  );
+}
+
+
+
+
+class App2 extends Component {
+  // constructor(props) {
+  //   super(props);
+
+  //   this.state = {
+  //     products: [],
+  //     cartItems: [],
+  //     isLoading: false,
+  //     hasError: false,
+  //     loadingError: null,
+  //   };
+
+  //   this.handleAddToCart = this.handleAddToCart.bind(this);
+  //   this.handleRemove = this.handleRemove.bind(this);
+  //   this.handleChange = this.handleChange.bind(this);
+  //   this.handleDownVote = this.handleDownVote.bind(this);
+  //   this.handleUpVote = this.handleUpVote.bind(this);
+  //   this.handleSetFavorite = this.handleSetFavorite.bind(this);
+  //   this.saveNewProduct = this.saveNewProduct.bind(this);
+  // }
+
+  // componentDidMount() {
+  //   const prevItems = loadLocalStorageData();
+
+  //   if (!prevItems) {
+  //     this.setState({
+  //       isLoading: true,
+  //     });
+
+  //     api.getProducts().then((data) => {
+  //       this.setState({
+  //         products: data,
+  //         isLoading: false,
+  //       });
+  //     });
+  //     return;
+  //   }
+
+  //   this.setState({
+  //     cartItems: prevItems.cartItems,
+  //     products: prevItems.products,
+  //   });
+  // }
+
+  // componentDidUpdate() {
+  //   const { cartItems, products } = this.state;
+
+  //   localStorage.setItem(
+  //     LOCAL_STORAGE_KEY,
+  //     JSON.stringify({ cartItems, products }),
+  //   );
+  // }
+
+  // handleAddToCart(productId) {
+  //   const { cartItems, products } = this.state;
+
+  //   const prevCartItem = cartItems.find((item) => item.id === productId);
+  //   const foundProduct = products.find((product) => product.id === productId);
+
+  //   if (prevCartItem) {
+  //     const updatedCartItems = cartItems.map((item) => {
+  //       if (item.id !== productId) {
+  //         return item;
+  //       }
+
+  //       if (item.quantity >= item.unitsInStock) {
+  //         return item;
+  //       }
+
+  //       return {
+  //         ...item,
+  //         quantity: item.quantity + 1,
+  //       };
+  //     });
+
+  //     this.setState({ cartItems: updatedCartItems });
+  //     return;
+  //   }
+
+  //   const updatedProduct = buildNewCartItem(foundProduct);
+  //   this.setState((prevState) => ({
+  //     cartItems: [...prevState.cartItems, updatedProduct],
+  //   }));
+  // }
 
   handleChange(event, productId) {
     const { cartItems } = this.state;
@@ -270,5 +376,3 @@ class App extends Component {
     );
   }
 }
-
-export default App;
