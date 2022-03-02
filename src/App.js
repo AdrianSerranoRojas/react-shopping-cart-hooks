@@ -42,6 +42,7 @@ function buildNewCartItem(cartItem) {
 export default function App() {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
+  const [formProduct, setFormProduct] = useState([]);
   const [status, setStatus] = useState({
     isLoading: false,
     hasError: false,
@@ -105,6 +106,102 @@ function handleAddToCart(productId) {
     setCartItems((prevCartItems) => ([
       ...prevCartItems, updatedProduct
     ]));
+  }
+
+
+  function handleChange(event, productId) {
+    const updatedCartItems = cartItems.map((item) => {
+      if (item.id === productId && item.quantity <= item.unitsInStock) {
+        return {
+          ...item,
+          quantity: Number(event.target.value),
+        };
+      }
+
+      return item;
+    });
+
+    setCartItems(updatedCartItems);
+  }
+
+  function handleRemove(productId) {
+    const updatedCartItems = cartItems.filter((item) => item.id !== productId);
+    setCartItems(updatedCartItems);
+  }
+
+  function handleDownVote(productId) {
+    const updatedProducts = products.map((product) => {
+      if (
+        product.id === productId &&
+        product.votes.downVotes.currentValue <
+          product.votes.downVotes.lowerLimit
+      ) {
+        return {
+          ...product,
+          votes: {
+            ...product.votes,
+            downVotes: {
+              ...product.votes.downVotes,
+              currentValue: product.votes.downVotes.currentValue + 1,
+            },
+          },
+        };
+      }
+
+      return product;
+    });
+
+    setProducts(updatedProducts);
+  }
+
+  function handleUpVote(productId) {
+    const updatedProducts = products.map((product) => {
+      if (
+        product.id === productId &&
+        product.votes.upVotes.currentValue < product.votes.upVotes.upperLimit
+      ) {
+        return {
+          ...product,
+          votes: {
+            ...product.votes,
+            upVotes: {
+              ...product.votes.upVotes,
+              currentValue: product.votes.upVotes.currentValue + 1,
+            },
+          },
+        };
+      }
+
+      return product;
+    });
+
+    setProducts(updatedProducts);
+  }
+
+  function handleSetFavorite(productId) {
+    const { products } = this.state;
+
+    const updatedProducts = products.map((product) => {
+      if (product.id === productId) {
+        return {
+          ...product,
+          isFavorite: !product.isFavorite,
+        };
+      }
+
+      return product;
+    });
+
+    setProducts(updatedProducts);
+  }
+
+  function saveNewProduct(newProduct) {
+    setProducts((prevState) => ([newProduct, ...prevState]));
+
+
+    setFormProduct((prevState) => ({
+      newProductFormOpen: !prevState.newProductFormOpen,
+    }));
   }
 
 
@@ -230,108 +327,108 @@ class App2 extends Component {
   //   }));
   // }
 
-  handleChange(event, productId) {
-    const { cartItems } = this.state;
+  // handleChange(event, productId) {
+  //   const { cartItems } = this.state;
 
-    const updatedCartItems = cartItems.map((item) => {
-      if (item.id === productId && item.quantity <= item.unitsInStock) {
-        return {
-          ...item,
-          quantity: Number(event.target.value),
-        };
-      }
+  //   const updatedCartItems = cartItems.map((item) => {
+  //     if (item.id === productId && item.quantity <= item.unitsInStock) {
+  //       return {
+  //         ...item,
+  //         quantity: Number(event.target.value),
+  //       };
+  //     }
 
-      return item;
-    });
+  //     return item;
+  //   });
 
-    this.setState({ cartItems: updatedCartItems });
-  }
+  //   this.setState({ cartItems: updatedCartItems });
+  // }
 
-  handleRemove(productId) {
-    const { cartItems } = this.state;
-    const updatedCartItems = cartItems.filter((item) => item.id !== productId);
+  // handleRemove(productId) {
+  //   const { cartItems } = this.state;
+  //   const updatedCartItems = cartItems.filter((item) => item.id !== productId);
 
-    this.setState({
-      cartItems: updatedCartItems,
-    });
-  }
+  //   this.setState({
+  //     cartItems: updatedCartItems,
+  //   });
+  // }
 
-  handleDownVote(productId) {
-    const { products } = this.state;
+  // handleDownVote(productId) {
+  //   const { products } = this.state;
 
-    const updatedProducts = products.map((product) => {
-      if (
-        product.id === productId &&
-        product.votes.downVotes.currentValue <
-          product.votes.downVotes.lowerLimit
-      ) {
-        return {
-          ...product,
-          votes: {
-            ...product.votes,
-            downVotes: {
-              ...product.votes.downVotes,
-              currentValue: product.votes.downVotes.currentValue + 1,
-            },
-          },
-        };
-      }
+  //   const updatedProducts = products.map((product) => {
+  //     if (
+  //       product.id === productId &&
+  //       product.votes.downVotes.currentValue <
+  //         product.votes.downVotes.lowerLimit
+  //     ) {
+  //       return {
+  //         ...product,
+  //         votes: {
+  //           ...product.votes,
+  //           downVotes: {
+  //             ...product.votes.downVotes,
+  //             currentValue: product.votes.downVotes.currentValue + 1,
+  //           },
+  //         },
+  //       };
+  //     }
 
-      return product;
-    });
+  //     return product;
+  //   });
 
-    this.setState({ products: updatedProducts });
-  }
+  //   this.setState({ products: updatedProducts });
+  // }
 
-  handleUpVote(productId) {
-    const { products } = this.state;
+  // handleUpVote(productId) {
+  //   const { products } = this.state;
 
-    const updatedProducts = products.map((product) => {
-      if (
-        product.id === productId &&
-        product.votes.upVotes.currentValue < product.votes.upVotes.upperLimit
-      ) {
-        return {
-          ...product,
-          votes: {
-            ...product.votes,
-            upVotes: {
-              ...product.votes.upVotes,
-              currentValue: product.votes.upVotes.currentValue + 1,
-            },
-          },
-        };
-      }
+  //   const updatedProducts = products.map((product) => {
+  //     if (
+  //       product.id === productId &&
+  //       product.votes.upVotes.currentValue < product.votes.upVotes.upperLimit
+  //     ) {
+  //       return {
+  //         ...product,
+  //         votes: {
+  //           ...product.votes,
+  //           upVotes: {
+  //             ...product.votes.upVotes,
+  //             currentValue: product.votes.upVotes.currentValue + 1,
+  //           },
+  //         },
+  //       };
+  //     }
 
-      return product;
-    });
+  //     return product;
+  //   });
 
-    this.setState({ products: updatedProducts });
-  }
+  //   this.setState({ products: updatedProducts });
+  // }
 
-  handleSetFavorite(productId) {
-    const { products } = this.state;
+  // handleSetFavorite(productId) {
+  //   const { products } = this.state;
 
-    const updatedProducts = products.map((product) => {
-      if (product.id === productId) {
-        return {
-          ...product,
-          isFavorite: !product.isFavorite,
-        };
-      }
+  //   const updatedProducts = products.map((product) => {
+  //     if (product.id === productId) {
+  //       return {
+  //         ...product,
+  //         isFavorite: !product.isFavorite,
+  //       };
+  //     }
 
-      return product;
-    });
+  //     return product;
+  //   });
 
-    this.setState({ products: updatedProducts });
-  }
+  //   this.setState({ products: updatedProducts });
+  // }
 
-  saveNewProduct(newProduct) {
-    this.setState((prevState) => ({
-      products: [newProduct, ...prevState.products],
-      newProductFormOpen: !prevState.newProductFormOpen,
-    }));
-  }
+  // saveNewProduct(newProduct) {
+  //   this.setState((prevState) => ({
+  //     products: [newProduct, ...prevState.products],
+  //     newProductFormOpen: !prevState.newProductFormOpen,
+  //   }));
+  // }
 
   render() {
     const {
